@@ -29,7 +29,7 @@ This hash-table implementation uses the [FNV-1 hash function](https://en.wikiped
 By default it maps strings (char *) to integers (int), but you can easily change that to suit your purpose by simply changing this one line: 
 
 ```c
-\\ in htable.h, line 13:
+// in htable.h, line 13:
 
 #define ITEM_TYPE int
 ```
