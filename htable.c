@@ -31,6 +31,24 @@ void table_init(Htable* table) {
 }
 
 
+// return a pointer to the item struct that the key is mapped to
+static H__item* table__find(Htable* table, const char* key) {
+    size_t index = table__hash(key) % table->cap;
+    H__item* curr_item = &table->items[index];
+    H__item* prev_item = NULL;
+
+    while (curr_item != NULL) {
+        if (strcmp(key, curr_item->key) == 0) {
+            return curr_item;
+        }
+
+        prev_item = curr_item;
+        curr_item = curr_item->next;
+    }
+
+    return NULL;
+}
+
 void table_set(Htable* table, const char* key, ITEM_TYPE value) {
     table__grow(table);
     size_t hash = table__hash(key);
@@ -66,31 +84,29 @@ void table_set(Htable* table, const char* key, ITEM_TYPE value) {
     table->count++;
 }
 
-ITEM_TYPE table_get(Htable* table, const char* key) {
-    size_t index = table__hash(key) % table->cap;
-    
-    // if the slot only contains a single element,
-    // return the head. 
-    if (table->items[index].next == NULL)  
-        return table->items[index].value;
 
-    H__item* curr_item = &table->items[index];
-    H__item* prev_item = NULL;
+bool table_has(Htable* table, const char* key) {
+    return table__find(table, key)->key != NULL;
+}
 
-    while (curr_item != NULL) {
-        if (strcmp(key, curr_item->key) == 0) {
-            return curr_item->value;
-        }
-
-        prev_item = curr_item;
-        curr_item = curr_item->next;
+bool table_remove(Htable* table, const char* key) {
+    H__item* item = table__find(table, key);
+    if (item != NULL) {
+        item->key = NULL; 
+        item->value = 0;
+        return true;
     }
+    return false;
+}
 
-    return 0;
+ITEM_TYPE table_get(Htable* table, const char* key) {
+    H__item* item = table__find(table, key);
+    if (item == NULL) return 0;
+    return item->value;
 }
 
 void table_free(Htable* table){
-    
+
     for(size_t i = 0; i < table->cap; i++) {
         if (table->items[i].key != NULL) {
             H__item* prev = NULL;
