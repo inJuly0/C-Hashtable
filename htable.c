@@ -35,11 +35,12 @@ void table_set(Htable* table, const char* key, ITEM_TYPE value) {
     table__grow(table);
     size_t hash = table__hash(key);
     size_t index = hash % table->cap;
-    H__item entry = {key, value};
+    H__item entry = {key, value, NULL};
     
     if (table->items[index].key == NULL){
         // key not present, insert item.
         table->items[index] = entry;
+        table->count++;
         return;
     }
 
@@ -62,6 +63,7 @@ void table_set(Htable* table, const char* key, ITEM_TYPE value) {
     prev_item->next = (H__item*)malloc(sizeof(H__item));
     prev_item->next->key = key;
     prev_item->next->value = value;
+    table->count++;
 }
 
 ITEM_TYPE table_get(Htable* table, const char* key) {
@@ -85,4 +87,23 @@ ITEM_TYPE table_get(Htable* table, const char* key) {
     }
 
     return 0;
+}
+
+void table_free(Htable* table){
+    
+    for(size_t i = 0; i < table->cap; i++) {
+        if (table->items[i].key != NULL) {
+            H__item* prev = NULL;
+            H__item* curr = &table->items[i];
+            while (curr != NULL) {
+                prev = curr;
+                curr = curr->next;
+                free(prev);
+            }
+        }
+    }
+
+    table_init(table);
+    free(table->items);
+    free(table);
 }
