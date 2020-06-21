@@ -41,4 +41,7 @@ Htable table;
 table_init(&table);
 table_set(&table, "a", "hello");
 printf("%s\n", table_get(&table, "a")); // "hello"
+
+// clean up after your mess !
+table_free(&table);
 ```
